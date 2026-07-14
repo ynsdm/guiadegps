@@ -216,7 +216,55 @@
             <div id="route-output"></div>
         </div>
     </div>
+    <script>
+    // 1. Agregar el botón de copiar en el HTML dinámicamente
+    const resultSection = document.getElementById('result-section');
+    const copyBtn = document.createElement('button');
+    copyBtn.innerText = "📋 Copiar Ruta";
+    copyBtn.className = "btn-secondary";
+    copyBtn.style.marginTop = "15px";
+    resultSection.appendChild(copyBtn);
 
+    // 2. Funcionalidad de Copiado
+    copyBtn.addEventListener('click', () => {
+        let textToCopy = "📋 Orden de Ruta Optimizado:\n";
+        const items = document.querySelectorAll('.route-item');
+        items.forEach((item, index) => {
+            textToCopy += `Parada ${index + 1}: ${item.querySelector('strong').innerText.split(': ')[1]}\n`;
+        });
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalText = copyBtn.innerText;
+            copyBtn.innerText = "¡Copiado!";
+            setTimeout(() => copyBtn.innerText = originalText, 2000);
+        });
+    });
+
+    // 3. Modificación del cálculo para incluir tiempo
+    // Enganchamos al botón original para que muestre el tiempo al final
+    const originalCalcBtn = document.getElementById('calc-btn');
+    originalCalcBtn.addEventListener('click', () => {
+        setTimeout(() => {
+            const totalDist = Array.from(document.querySelectorAll('.badge'))
+                .reduce((acc, el) => acc + parseFloat(el.innerText), 0);
+            
+            const numParadas = document.querySelectorAll('.route-item').length;
+            const tiempoViaje = (totalDist / 60) * 60; // tiempo en minutos
+            const tiempoParadas = numParadas * 30; // 30 min por parada
+            const tiempoTotal = Math.round(tiempoViaje + tiempoParadas);
+
+            const timeDiv = document.createElement('div');
+            timeDiv.style.marginTop = "15px";
+            timeDiv.style.padding = "10px";
+            timeDiv.style.background = "rgba(56, 189, 248, 0.1)";
+            timeDiv.style.borderRadius = "8px";
+            timeDiv.innerHTML = `<strong>⏰ Tiempo estimado total: ${tiempoTotal} min</strong> 
+                                <br><small>(${Math.round(tiempoViaje)} min de viaje + ${tiempoParadas} min en paradas)</small>`;
+            
+            resultSection.appendChild(timeDiv);
+        }, 2000); // Esperamos a que termine el cálculo de OSRM
+    });
+</script>
     <div id="map-container"></div>
 </div>
 
@@ -504,54 +552,6 @@
         calcBtn.disabled = false;
     });
 </script>
-<script>
-    // 1. Agregar el botón de copiar en el HTML dinámicamente
-    const resultSection = document.getElementById('result-section');
-    const copyBtn = document.createElement('button');
-    copyBtn.innerText = "📋 Copiar Ruta";
-    copyBtn.className = "btn-secondary";
-    copyBtn.style.marginTop = "15px";
-    resultSection.appendChild(copyBtn);
 
-    // 2. Funcionalidad de Copiado
-    copyBtn.addEventListener('click', () => {
-        let textToCopy = "📋 Orden de Ruta Optimizado:\n";
-        const items = document.querySelectorAll('.route-item');
-        items.forEach((item, index) => {
-            textToCopy += `Parada ${index + 1}: ${item.querySelector('strong').innerText.split(': ')[1]}\n`;
-        });
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = "¡Copiado!";
-            setTimeout(() => copyBtn.innerText = originalText, 2000);
-        });
-    });
-
-    // 3. Modificación del cálculo para incluir tiempo
-    // Enganchamos al botón original para que muestre el tiempo al final
-    const originalCalcBtn = document.getElementById('calc-btn');
-    originalCalcBtn.addEventListener('click', () => {
-        setTimeout(() => {
-            const totalDist = Array.from(document.querySelectorAll('.badge'))
-                .reduce((acc, el) => acc + parseFloat(el.innerText), 0);
-            
-            const numParadas = document.querySelectorAll('.route-item').length;
-            const tiempoViaje = (totalDist / 60) * 60; // tiempo en minutos
-            const tiempoParadas = numParadas * 30; // 30 min por parada
-            const tiempoTotal = Math.round(tiempoViaje + tiempoParadas);
-
-            const timeDiv = document.createElement('div');
-            timeDiv.style.marginTop = "15px";
-            timeDiv.style.padding = "10px";
-            timeDiv.style.background = "rgba(56, 189, 248, 0.1)";
-            timeDiv.style.borderRadius = "8px";
-            timeDiv.innerHTML = `<strong>⏰ Tiempo estimado total: ${tiempoTotal} min</strong> 
-                                <br><small>(${Math.round(tiempoViaje)} min de viaje + ${tiempoParadas} min en paradas)</small>`;
-            
-            resultSection.appendChild(timeDiv);
-        }, 2000); // Esperamos a que termine el cálculo de OSRM
-    });
-</script>
 </body>
 </html>
