@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guia de rutas</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
+<style>
         :root {
             --bg-color: #111827;
             --card-bg: rgba(31, 41, 55, 0.7);
@@ -15,6 +15,15 @@
             --border-color: rgba(255, 255, 255, 0.1);
         }
 
+        /* Variables para Modo Claro */
+        body.light-mode {
+            --bg-color: #f3f4f6;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --text-color: #111827;
+            --border-color: rgba(0, 0, 0, 0.1);
+        }
+        body.light-mode input[type="text"] { background: #fff; color: #111827; border-color: #ccc; }
+
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
@@ -23,6 +32,7 @@
             padding: 20px;
             display: flex;
             justify-content: center;
+            transition: background 0.3s;
         }
 
         .container {
@@ -55,6 +65,17 @@
             color: var(--accent-color);
             margin-top: 0;
             font-size: 1.6rem;
+        }
+
+        .theme-toggle {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .theme-toggle button {
+            width: auto;
+            padding: 5px 15px;
+            font-size: 0.8rem;
         }
 
         .section {
@@ -186,7 +207,9 @@
 <div class="container">
     <div class="panel">
         <h1>📍 Organizador de Rutas</h1>
-
+<div class="theme-toggle">
+            <button class="btn-secondary" id="theme-btn">Cambiar Modo (Claro/Oscuro)</button>
+        </div>
         <div class="section">
             <label for="origin-name">1. Nombre del Origen:</label>
             <input type="text" id="origin-name" value="Mi Ubicación Actual" style="margin-bottom: 8px;">
@@ -216,60 +239,22 @@
             <div id="route-output"></div>
         </div>
     </div>
-    <script>
-    // 1. Agregar el botón de copiar en el HTML dinámicamente
-    const resultSection = document.getElementById('result-section');
-    const copyBtn = document.createElement('button');
-    copyBtn.innerText = "📋 Copiar Ruta";
-    copyBtn.className = "btn-secondary";
-    copyBtn.style.marginTop = "15px";
-    resultSection.appendChild(copyBtn);
 
-    // 2. Funcionalidad de Copiado
-    copyBtn.addEventListener('click', () => {
-        let textToCopy = "📋 Orden de Ruta Optimizado:\n";
-        const items = document.querySelectorAll('.route-item');
-        items.forEach((item, index) => {
-            textToCopy += `Parada ${index + 1}: ${item.querySelector('strong').innerText.split(': ')[1]}\n`;
-        });
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = "¡Copiado!";
-            setTimeout(() => copyBtn.innerText = originalText, 2000);
-        });
-    });
-
-    // 3. Modificación del cálculo para incluir tiempo
-    // Enganchamos al botón original para que muestre el tiempo al final
-    const originalCalcBtn = document.getElementById('calc-btn');
-    originalCalcBtn.addEventListener('click', () => {
-        setTimeout(() => {
-            const totalDist = Array.from(document.querySelectorAll('.badge'))
-                .reduce((acc, el) => acc + parseFloat(el.innerText), 0);
-            
-            const numParadas = document.querySelectorAll('.route-item').length;
-            const tiempoViaje = (totalDist / 60) * 60; // tiempo en minutos
-            const tiempoParadas = numParadas * 30; // 30 min por parada
-            const tiempoTotal = Math.round(tiempoViaje + tiempoParadas);
-
-            const timeDiv = document.createElement('div');
-            timeDiv.style.marginTop = "15px";
-            timeDiv.style.padding = "10px";
-            timeDiv.style.background = "rgba(56, 189, 248, 0.1)";
-            timeDiv.style.borderRadius = "8px";
-            timeDiv.innerHTML = `<strong>⏰ Tiempo estimado total: ${tiempoTotal} min</strong> 
-                                <br><small>(${Math.round(tiempoViaje)} min de viaje + ${tiempoParadas} min en paradas)</small>`;
-            
-            resultSection.appendChild(timeDiv);
-        }, 2000); // Esperamos a que termine el cálculo de OSRM
-    });
-</script>
     <div id="map-container"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <script>
+    // Lógica de Modo Claro/Oscuro
+    const themeBtn = document.getElementById('theme-btn');
+    themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        // Cambiar estilo del mapa si es necesario
+        const isLight = document.body.classList.contains('light-mode');
+        mapLayers.forEach(l => map.removeLayer(l)); // Limpiar temporalmente o actualizar tileLayer
+        // Para cambiar el mapa, lo ideal es recargarlo o cambiar su URL
+    });
 <script>
     const map = L.map('map-container').setView([10.644, -71.644], 13); 
 
